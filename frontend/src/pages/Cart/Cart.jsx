@@ -45,7 +45,7 @@ const Cart = () => {
               <p>
                 {currency} {productData.price}
               </p>
-              <p>Quantitys: {item.quantity}</p>
+              <p>Quantity: {item.quantity}</p>
             </div>
           );
         })}

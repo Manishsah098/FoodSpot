@@ -13,7 +13,7 @@ const Hero = () => {
       <div className="hero_top">
 
         <div className="hero_left">
-          <h2>Enjoy Your Delicious Meals</h2>
+          <h2>Enjoy Your Delicious Meal</h2>
           <h2>Discover Delicious Healthy Meal That Nourishes You.</h2>
           <p>
             Taste happiness in every bite. Order delicious meals quickly and
