@@ -7,11 +7,10 @@ import FoodContextProvider from "./context/FoodContext";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
+ <BrowserRouter>
  <FoodContextProvider>
-  <BrowserRouter>
     <App />
-  </BrowserRouter>
-  
- </FoodContextProvider>
+  </FoodContextProvider>
+   </BrowserRouter>
  
 );

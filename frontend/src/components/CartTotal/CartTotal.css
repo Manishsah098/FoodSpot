@@ -1,0 +1,25 @@
+.cart-total-container{
+    width: 100%;
+    color: #333;
+}
+.cart-title h2{
+    font-size: 26px;
+    margin-bottom: 1rem;
+}
+.cart-details{
+    font-size: 1rem;
+}
+.cart-row{
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5;
+}
+.cart-divider{
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 0.5rem 0;
+}
+.cart-total{
+    font-weight: bold;
+    margin-top: 1rem;
+}

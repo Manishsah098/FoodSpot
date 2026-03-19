@@ -44,7 +44,7 @@ const FoodContextProvider = ({ children }) => {
 
 
     return (
-        <FoodContext.Provider value={{ products, currency,getCartCount, getCartAmount, addToCart, delivery_fee, setProducts }}>
+        <FoodContext.Provider value={{ products,cartItems, currency,getCartCount, getCartAmount, addToCart, delivery_fee, setProducts }}>
             {children}
         </FoodContext.Provider>
     );
