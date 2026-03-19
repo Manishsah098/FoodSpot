@@ -14,7 +14,7 @@ import food13 from './chicken.avif'
 import food14 from './pizza2.jpg'
 
 
-import stripe_logo from './logo.png'
+import stripe_logo from './stripe_logo.png'
 
 export const categoryItem = [
     {

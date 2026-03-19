@@ -1,8 +1,10 @@
 import React, { useContext, useState, useEffect } from "react";
 import { FoodContext } from "../../context/FoodContext";
 import { MdDelete } from "react-icons/md";
-import {CartTotal} from "../../components/CartTotal/CartTotal";
+import CartTotal from "../../components/CartTotal/CartTotal";
 import './Cart.css'
+import { useNavigate } from 'react-router-dom';
+
 const Cart = () => {
   const { products, currency, cartItems, updateQuantity } =
     useContext(FoodContext);
