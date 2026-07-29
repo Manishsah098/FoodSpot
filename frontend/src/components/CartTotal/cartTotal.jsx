@@ -1,40 +1,46 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { FoodContext } from "../../context/FoodContext";
 import "./CartTotal.css";
+import { BiReceipt, BiTagAlt } from "react-icons/bi";
 
-function CartTotal (){
+function CartTotal() {
   const { getCartAmount, delivery_fee, currency } = useContext(FoodContext);
+  const subtotal = getCartAmount();
+  const total = subtotal === 0 ? 0 : subtotal + delivery_fee;
+
   return (
-    <div className="cart-total">
-      <div className="cart-total-container">
-        <div className="cart-title">
-          <h2>CART TOTAL</h2>
+    <div className="cart-summary-card">
+      <div className="summary-header">
+        <BiReceipt className="summary-header-icon" />
+        <h3>Order Summary</h3>
+      </div>
+
+      <div className="summary-rows">
+        <div className="summary-row">
+          <span className="label">Subtotal</span>
+          <span className="val">{currency} {subtotal}</span>
         </div>
-        <div className="cart-details">
-          <div className="cart-row">
-            <p>Subtotal</p>
-            <p>
-              {currency} {getCartAmount()}
-            </p>
-          </div>
-          <hr className="cart-divider" />
-          <div className="cart-row">
-            <p>Shipping Fee</p>
-            <p>
-              {currency} {delivery_fee}
-            </p>
-          </div>
-          <div className="cart-row cart-total">
-            <b>Total</b>
-            <b>
-              {currency}{" "}
-              {getCartAmount() === 0 ? 0 : getCartAmount() + delivery_fee}{" "}
-            </b>
-          </div>
+
+        <div className="summary-row">
+          <span className="label">Estimated Delivery Fee</span>
+          <span className="val">{subtotal === 0 ? `${currency} 0` : `${currency} ${delivery_fee}`}</span>
+        </div>
+
+        <div className="promo-box">
+          <BiTagAlt className="promo-icon" />
+          <input type="text" placeholder="Promo code" className="promo-input" />
+          <button className="promo-btn">Apply</button>
+        </div>
+
+        <hr className="summary-divider" />
+
+        <div className="summary-row total-row">
+          <span className="total-label">Total Amount</span>
+          <span className="total-val">{currency} {total}</span>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default CartTotal
+export default CartTotal;

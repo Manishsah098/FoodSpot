@@ -1,25 +1,106 @@
-.cart-total-container{
-    width: 100%;
-    color: #333;
+.cart-summary-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
 }
-.cart-title h2{
-    font-size: 26px;
-    margin-bottom: 1rem;
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
 }
-.cart-details{
-    font-size: 1rem;
+
+.summary-header-icon {
+  font-size: 22px;
+  color: var(--primary);
 }
-.cart-row{
-    display: flex;
-    justify-content: space-between;
-    margin: 0.5;
+
+.summary-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--secondary);
 }
-.cart-divider{
-    border: none;
-    border-top: 1px solid #ddd;
-    margin: 0.5rem 0;
+
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.cart-total{
-    font-weight: bold;
-    margin-top: 1rem;
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.summary-row .val {
+  font-weight: 600;
+  color: var(--secondary);
+}
+
+/* Promo Box */
+.promo-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  margin: 6px 0;
+}
+
+.promo-icon {
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+.promo-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+}
+
+.promo-btn {
+  background: var(--secondary);
+  color: white;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.promo-btn:hover {
+  background: var(--primary);
+}
+
+.summary-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 4px 0;
+}
+
+.total-row {
+  font-size: 16px;
+  padding-top: 4px;
+}
+
+.total-label {
+  font-weight: 800;
+  color: var(--secondary);
+}
+
+.total-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
 }

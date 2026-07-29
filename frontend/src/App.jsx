@@ -9,19 +9,22 @@ import Checkout from "./pages/Checkout/Checkout";
 import Footer from "./components/Footer/Footer";
 import Order from "./pages/Order/Order";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const App = () => {
   return (
-    <div>
-      <ToastContainer />
+    <div className="app-container">
+      <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} />
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/orders" element={<Order />} />
-      </Routes>
-
+      <div className="main-layout">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/orders" element={<Order />} />
+        </Routes>
+      </div>
       <Footer />
     </div>
   );

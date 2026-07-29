@@ -37,8 +37,8 @@ const FoodContextProvider = ({ children }) => {
 
     const getCartAmount = () => {
         return Object.entries(cartItems).reduce((total, [itemId, quantity]) => {
-            const iteminfo = products .find((product) => product._id === itemId);
-            return iteminfo ? total + iteminfo.price * quantity : totalAmount;
+            const iteminfo = products.find((product) => product._id === itemId);
+            return iteminfo ? total + iteminfo.price * quantity : total;
         }, 0);
     }
 

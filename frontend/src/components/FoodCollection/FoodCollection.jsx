@@ -1,78 +1,116 @@
-import React, { useContext, useState } from 'react'
-import './FoodCollection.css'
-import { categoryItem } from '../../assets/assests'
-import { FoodContext } from '../../context/FoodContext'
+import React, { useContext, useState, useEffect } from 'react';
+import './FoodCollection.css';
+import { categoryItem } from '../../assets/assests';
+import { FoodContext } from '../../context/FoodContext';
+import { FaStar, FaPlus, FaCheck, FaSearch } from 'react-icons/fa';
+import { useSearchParams } from 'react-router-dom';
 
 const FoodCollection = () => {
+  const { products, addToCart, currency } = useContext(FoodContext);
+  const [category, setCategory] = useState('All');
+  const [searchParams] = useSearchParams();
+  const [addedItems, setAddedItems] = useState({});
 
-    const { products, addToCart } = useContext(FoodContext)
-    const [category, setCategory] = useState('All')
+  const searchQuery = searchParams.get('search') || '';
 
-    return (
-        <div>
-            <div className="food_container">
-                <div className="header_section">
-                    <h1>Discover Our Menu</h1>
-                    <hr className='divider' />
-                </div>
+  const handleAdd = (id) => {
+    addToCart(id);
+    setAddedItems((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setAddedItems((prev) => ({ ...prev, [id]: false }));
+    }, 1500);
+  };
 
-                <div className="display_container">
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = category === 'All' || product.category === category;
+    const matchesSearch = searchQuery
+      ? product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
+  });
 
-                    <div className='category_section'>
-                        <h1>Explore Our Categories</h1>
-                        <ul className='category_list'>
-                            {
-                                categoryItem.map((item, index) => (
-                                    <li
-                                        key={index}
-                                        onClick={() =>
-                                            setCategory((prev) =>
-                                                prev === item.category_title ? 'All' : item.category_title
-                                            )
-                                        }
-                                        className={category === item.category_title ? 'active' : ''}
-                                    >
-                                        {item.category_title}
-                                    </li>
-                                ))
-                            }
-                        </ul>
-                    </div>
+  return (
+    <section className="food-collection-section" id="food-menu-section">
+      <div className="section-header">
+        <div className="section-tagline">OUR SPECIAL MENU</div>
+        <h2 className="section-title">Explore Delicious Categories</h2>
+        <p className="section-subtitle">
+          Choose from a wide variety of mouth-watering dishes crafted with love and fresh ingredients.
+        </p>
+      </div>
 
-                    <div className='grid_display'>
-                        <div className='cards'>
-                        {
-                            products.length > 0 ? (
-                                products
-                                    .filter((product) => category === 'All' || category === product.category)
-                                    .map((product) => (
-                                        <div key={product._id} className='product_card'>
+      <div className="categories-pills-bar">
+        {categoryItem.map((item, index) => (
+          <button
+            key={index}
+            onClick={() => setCategory(item.category_title)}
+            className={`category-pill ${category === item.category_title ? 'active' : ''}`}
+          >
+            <span className="pill-icon">{item.icon}</span>
+            <span className="pill-title">{item.category_title}</span>
+          </button>
+        ))}
+      </div>
 
-                                            <div className='product-image'>
-                                                <img src={product.image} alt={product.name} />
-                                            </div>
-
-                                            <h3>{product.name}</h3>
-
-                                            <div className="price-add">
-                                                <p>${product.price}</p>
-                                                <button onClick={() => addToCart(product._id)}>Add To Cart</button>
-                                            </div>
-
-                                        </div>
-                                       
-                                    ))
-                            ) : (
-                                <p>No Products Found</p>
-                            )
-                        }
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+      {searchQuery && (
+        <div className="search-status-bar">
+          <FaSearch className="search-status-icon" />
+          <span>Showing results for: <strong>"{searchQuery}"</strong></span>
         </div>
-    )
-}
+      )}
 
-export default FoodCollection
+      <div className="products-grid">
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((item) => (
+            <div key={item._id} className="food-card">
+              <div className="card-image-wrapper">
+                <img src={item.image} alt={item.name} className="food-card-img" />
+                <div className="rating-badge">
+                  <FaStar className="star-icon" />
+                  <span>{item.rating || 4.8}</span>
+                </div>
+              </div>
+
+              <div className="food-card-content">
+                <div className="category-tag">{item.category}</div>
+                <h3 className="food-title">{item.name}</h3>
+                <p className="food-description">{item.description}</p>
+                
+                <div className="card-footer">
+                  <div className="price-tag">
+                    <span className="currency-symbol">{currency}</span>
+                    <span className="price-value">{item.price}</span>
+                  </div>
+
+                  <button
+                    className={`add-cart-btn ${addedItems[item._id] ? 'added' : ''}`}
+                    onClick={() => handleAdd(item._id)}
+                  >
+                    {addedItems[item._id] ? (
+                      <>
+                        <FaCheck /> Added
+                      </>
+                    ) : (
+                      <>
+                        <FaPlus /> Add
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="no-products-state">
+            <div className="empty-icon">🍲</div>
+            <h3>No Dishes Found</h3>
+            <p>We couldn't find any dish matching your selection. Try another category or search term.</p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
+export default FoodCollection;
