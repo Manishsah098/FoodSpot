@@ -1,40 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import "./Order.css";
 import { BiPackage, BiCheckCircle, BiTimeFive, BiRefresh } from "react-icons/bi";
-import { FaUtensils } from "react-icons/fa";
-import { product } from "../../assets/assests";
+import { FoodContext } from "../../context/FoodContext";
 import { useNavigate } from "react-router-dom";
 
 const Order = () => {
   const navigate = useNavigate();
-
-  const mockOrders = [
-    {
-      id: "ORD-94821",
-      date: "July 29, 2026",
-      status: "In Transit",
-      statusColor: "orange",
-      total: 510,
-      items: [
-        { product: product[1], quantity: 1 },
-        { product: product[3], quantity: 1 },
-        { product: product[4], quantity: 1 },
-      ],
-      address: "B-402 Sunshine Heights, Green Park, New Delhi",
-    },
-    {
-      id: "ORD-83719",
-      date: "July 25, 2026",
-      status: "Delivered",
-      statusColor: "green",
-      total: 340,
-      items: [
-        { product: product[0], quantity: 1 },
-        { product: product[2], quantity: 1 },
-      ],
-      address: "B-402 Sunshine Heights, Green Park, New Delhi",
-    },
-  ];
+  const { orders, currency } = useContext(FoodContext);
 
   return (
     <div className="orders-page-container">
@@ -43,58 +15,80 @@ const Order = () => {
         <p className="page-subtitle">Track your live food orders and view past history</p>
       </div>
 
-      <div className="orders-list">
-        {mockOrders.map((order) => (
-          <div key={order.id} className="order-card">
-            
-            <div className="order-card-header">
-              <div className="order-info-group">
-                <BiPackage className="package-icon" />
-                <div>
-                  <h3 className="order-id">{order.id}</h3>
-                  <span className="order-date">{order.date}</span>
-                </div>
-              </div>
-
-              <div className={`status-pill ${order.statusColor}`}>
-                {order.status === "Delivered" ? <BiCheckCircle /> : <BiTimeFive />}
-                <span>{order.status}</span>
-              </div>
-            </div>
-
-            <div className="order-items-grid">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="order-item">
-                  <img src={item.product.image} alt={item.product.name} className="order-item-img" />
-                  <div className="order-item-detail">
-                    <span className="order-item-name">{item.product.name}</span>
-                    <span className="order-item-meta">Qty: {item.quantity} x ₹{item.product.price}</span>
+      {orders && orders.length > 0 ? (
+        <div className="orders-list">
+          {orders.map((order) => (
+            <div key={order.id} className="order-card">
+              
+              <div className="order-card-header">
+                <div className="order-info-group">
+                  <BiPackage className="package-icon" />
+                  <div>
+                    <h3 className="order-id">{order.id}</h3>
+                    <span className="order-date">{order.date}</span>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="order-card-footer">
-              <div className="delivery-loc">
-                <p><strong>Deliver to:</strong> {order.address}</p>
+                <div className={`status-pill ${order.statusColor || 'orange'}`}>
+                  {order.status === "Delivered" ? <BiCheckCircle /> : <BiTimeFive />}
+                  <span>{order.status}</span>
+                </div>
               </div>
 
-              <div className="order-total-action">
-                <div className="total-box">
-                  <span>Total Amount</span>
-                  <h4>₹{order.total}</h4>
+              <div className="order-items-grid">
+                {order.items && order.items.map((item, idx) => (
+                  <div key={idx} className="order-item">
+                    {item.product && (
+                      <>
+                        <img src={item.product.image} alt={item.product.name} className="order-item-img" />
+                        <div className="order-item-detail">
+                          <span className="order-item-name">{item.product.name}</span>
+                          <span className="order-item-meta">
+                            Qty: {item.quantity} x {currency}{item.product.price}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="order-card-footer">
+                <div className="delivery-loc">
+                  <p><strong>Deliver to:</strong> {order.address}</p>
+                  {order.paymentMethod && (
+                    <span className="payment-method-badge">
+                      Payment: {order.paymentMethod === 'stripe' ? 'Online Card (Stripe)' : 'Cash on Delivery'}
+                    </span>
+                  )}
                 </div>
 
-                <button className="reorder-btn" onClick={() => navigate("/")}>
-                  <BiRefresh className="btn-icon" />
-                  <span>Order Again</span>
-                </button>
-              </div>
-            </div>
+                <div className="order-total-action">
+                  <div className="total-box">
+                    <span>Total Amount</span>
+                    <h4>{currency}{order.total}</h4>
+                  </div>
 
-          </div>
-        ))}
-      </div>
+                  <button className="reorder-btn" onClick={() => navigate("/")}>
+                    <BiRefresh className="btn-icon" />
+                    <span>Order Again</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-orders-view">
+          <BiPackage className="empty-orders-icon" />
+          <h2>No Active Orders</h2>
+          <p>You haven't placed any orders yet.</p>
+          <button className="reorder-btn" onClick={() => navigate("/")}>
+            Explore Menu
+          </button>
+        </div>
+      )}
     </div>
   );
 };

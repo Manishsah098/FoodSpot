@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import "./Login.css";
 import { BiEnvelope, BiLockAlt, BiUser, BiArrowBack } from "react-icons/bi";
 import { FaGoogle, FaFacebookF } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { FoodContext } from "../../context/FoodContext";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
@@ -11,11 +11,18 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  const { loginUser } = useContext(FoodContext);
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success(`Welcome ${currentState === "Login" ? "back!" : "to FoodSpot!"}`);
+    const userName = name.trim() || email.split("@")[0] || "User";
+    loginUser({ name: userName, email });
+    navigate("/");
+  };
+
+  const handleSocialLogin = (provider) => {
+    loginUser({ name: `${provider} User`, email: `user@${provider.toLowerCase()}.com` });
     navigate("/");
   };
 
@@ -94,10 +101,10 @@ const Login = () => {
         </div>
 
         <div className="social-login-grid">
-          <button className="social-btn google">
+          <button className="social-btn google" type="button" onClick={() => handleSocialLogin("Google")}>
             <FaGoogle /> Google
           </button>
-          <button className="social-btn facebook">
+          <button className="social-btn facebook" type="button" onClick={() => handleSocialLogin("Facebook")}>
             <FaFacebookF /> Facebook
           </button>
         </div>

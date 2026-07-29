@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import "./Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
-import { BiUser, BiCart, BiSearch, BiFoodMenu, BiShoppingBag, BiLogOut } from "react-icons/bi";
+import { BiUser, BiCart, BiSearch, BiShoppingBag, BiLogOut } from "react-icons/bi";
 import { FoodContext } from "../../context/FoodContext";
 import { FaUtensils } from "react-icons/fa";
 
@@ -10,21 +10,26 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
+  const { getCartCount, user, logoutUser } = useContext(FoodContext);
+
   const handleNavigation = (path) => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       navigate(path);
-    }, 400);
+    }, 300);
   };
-
-  const { getCartCount } = useContext(FoodContext);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    navigate("/login");
   };
 
   return (
@@ -64,26 +69,38 @@ export const Navbar = () => {
           <div className="profile-group">
             <button className="icon-btn profile-btn" aria-label="Account">
               <BiUser className="action-icon" />
-              <span className="btn-label">Account</span>
+              <span className="btn-label">{user ? user.name.split(" ")[0] : "Account"}</span>
             </button>
             <div className="dropdown-menu">
               <div className="dropdown-header">
-                <p className="user-greeting">Welcome Guest</p>
-                <span className="user-sub">FoodSpot Customer</span>
+                <p className="user-greeting">{user ? `Hello, ${user.name}` : "Welcome Guest"}</p>
+                <span className="user-sub">{user ? user.email : "FoodSpot Customer"}</span>
               </div>
               <hr className="dropdown-divider" />
-              <Link to="/login" className="dropdown-item">
-                <BiUser className="menu-icon" />
-                <span>Login / Sign Up</span>
-              </Link>
+              
+              {!user ? (
+                <Link to="/login" className="dropdown-item">
+                  <BiUser className="menu-icon" />
+                  <span>Login / Sign Up</span>
+                </Link>
+              ) : null}
+
               <Link to="/orders" className="dropdown-item">
                 <BiShoppingBag className="menu-icon" />
                 <span>My Orders</span>
               </Link>
-              <div className="dropdown-item logout" onClick={() => navigate("/login")}>
-                <BiLogOut className="menu-icon" />
-                <span>Logout</span>
-              </div>
+
+              {user ? (
+                <div className="dropdown-item logout" onClick={handleLogout}>
+                  <BiLogOut className="menu-icon" />
+                  <span>Logout</span>
+                </div>
+              ) : (
+                <Link to="/login" className="dropdown-item logout">
+                  <BiLogOut className="menu-icon" />
+                  <span>Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
 

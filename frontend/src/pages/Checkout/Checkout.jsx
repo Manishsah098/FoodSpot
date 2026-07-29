@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { BiCreditCard, BiMoney, BiMapPin, BiUser, BiEnvelope, BiPhone } from "react-icons/bi";
 
 const Checkout = () => {
-  const { getCartAmount } = useContext(FoodContext);
+  const { getCartAmount, placeOrder } = useContext(FoodContext);
   const [method, setMethod] = useState("cod");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -30,19 +30,22 @@ const Checkout = () => {
   const handlePlaceOrder = (e) => {
     e.preventDefault();
     if (getCartAmount() === 0) {
-      toast.error("Your cart is empty!");
+      toast.error("Your cart is empty! Add dishes before placing an order.");
       return;
     }
 
-    if (!formData.firstName || !formData.phone || !formData.street) {
-      toast.warning("Please fill in your delivery details.");
+    if (!formData.firstName || !formData.phone || !formData.street || !formData.city) {
+      toast.warning("Please complete all required delivery address fields.");
       return;
     }
 
-    toast.success("🎉 Order Placed Successfully! Redirecting to orders...");
-    setTimeout(() => {
-      navigate("/orders");
-    }, 1500);
+    const createdOrder = placeOrder(formData, method);
+    if (createdOrder) {
+      toast.success(`🎉 Order #${createdOrder.id} Placed Successfully!`);
+      setTimeout(() => {
+        navigate("/orders");
+      }, 1000);
+    }
   };
 
   return (
