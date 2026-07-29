@@ -1,0 +1,136 @@
+/* Container and Layout */
+.footer {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 4rem 10% 2rem 10%;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* --- Top Section: Newsletter --- */
+.footer-top {
+  text-align: center;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid #333;
+}
+
+.footer-top h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #ff4757; /* Brand Color */
+}
+
+.footer-top p {
+  color: #a4a4a4;
+  margin-bottom: 1.5rem;
+}
+
+.input-footer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.input-footer input {
+  padding: 12px 20px;
+  width: 300px;
+  border-radius: 30px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+}
+
+.input-footer button {
+  padding: 12px 25px;
+  border-radius: 30px;
+  border: none;
+  background-color: #ff4757;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.input-footer button:hover {
+  background-color: #e84118;
+  transform: scale(1.05);
+}
+
+/* --- Bottom Section: Info --- */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 3rem 0;
+  flex-wrap: wrap;
+}
+
+.footer-left h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+.socials {
+  display: flex;
+  gap: 20px;
+}
+
+.social-icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.social-icon:hover {
+  color: #ff4757;
+}
+
+/* --- Links --- */
+.footer-right ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-right ul li {
+  cursor: pointer;
+  color: #a4a4a4;
+  transition: color 0.3s ease;
+}
+
+.footer-right ul li:hover {
+  color: #ffffff;
+  padding-left: 5px; /* Subtle slide effect */
+}
+
+/* --- Copyright --- */
+.copy {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .socials {
+    justify-content: center;
+  }
+
+  .input-footer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .input-footer input {
+    width: 100%;
+    max-width: 300px;
+  }
+}

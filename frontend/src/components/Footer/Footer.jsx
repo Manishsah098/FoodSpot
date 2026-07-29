@@ -16,7 +16,7 @@ const Footer = () => {
 
           </div>
         </div>
-        <div className="fotter-bottom">
+        <div className="footer-bottom">
           <div className="footer-left">
             <h2>FoodSpot</h2>
             <div className="socials">
