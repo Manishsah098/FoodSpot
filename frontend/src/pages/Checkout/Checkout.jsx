@@ -1,14 +1,17 @@
 import { useState, useContext, useEffect } from "react";
 import "./Checkout.css";
-import stripe from "../../assets/stripe_logo.png";
 import CartTotal from "../../components/CartTotal/CartTotal";
 import { FoodContext } from "../../context/FoodContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { BiCreditCard, BiMoney, BiMapPin, BiUser, BiEnvelope, BiPhone, BiCheckCircle } from "react-icons/bi";
+import { FaCreditCard } from "react-icons/fa";
+import axios from "axios";
+
+const BACKEND_URL = "http://localhost:4000";
 
 const Checkout = () => {
-  const { getCartAmount, placeOrder, user } = useContext(FoodContext);
+  const { getCartAmount, placeOrder, user, cartItems, foodList, clearCart } = useContext(FoodContext);
   const [method, setMethod] = useState("cod");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -28,19 +31,12 @@ const Checkout = () => {
   useEffect(() => {
     if (user) {
       const nameParts = (user.name || "").split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-
       setFormData((prev) => ({
         ...prev,
-        firstName: firstName || prev.firstName,
-        lastName: lastName || prev.lastName,
+        firstName: nameParts[0] || prev.firstName,
+        lastName: nameParts.slice(1).join(" ") || prev.lastName,
         email: user.email || prev.email,
-        phone: user.phone || prev.phone || "+91 9876543210",
-        street: user.street || prev.street || "",
-        city: user.city || prev.city || "",
-        state: user.state || prev.state || "",
-        zipcode: user.zipcode || prev.zipcode || "",
+        phone: user.phone || prev.phone || "",
       }));
     }
   }, [user]);
@@ -49,24 +45,77 @@ const Checkout = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e) => {
+  // Build order items from cart
+  const buildOrderItems = () => {
+    return Object.entries(cartItems || {}).flatMap(([id, sizes]) =>
+      Object.entries(sizes || {}).map(([size, qty]) => {
+        const food = foodList?.find((f) => f._id === id || f.id === id);
+        return food ? { ...food, quantity: qty, size } : null;
+      }).filter(Boolean)
+    );
+  };
+
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (getCartAmount() === 0) {
       toast.error("Your cart is empty! Add dishes before placing an order.");
       return;
     }
-
     if (!formData.firstName || !formData.phone || !formData.street || !formData.city) {
       toast.warning("Please complete all required delivery address fields.");
       return;
     }
 
-    const createdOrder = placeOrder(formData, method);
-    if (createdOrder) {
-      toast.success(`🎉 Order #${createdOrder.id} Placed! Sent to Admin for verification.`);
-      setTimeout(() => {
-        navigate("/orders");
-      }, 1000);
+    const userToken = localStorage.getItem("userToken");
+    const userId = user?.id || user?._id || "guest";
+    const items = buildOrderItems();
+    const amount = getCartAmount();
+
+    if (method === "stripe") {
+      // ── Stripe Checkout Session ──
+      try {
+        const res = await axios.post(
+          `${BACKEND_URL}/api/order/stripe`,
+          { userId, items, amount, address: formData },
+          { headers: { token: userToken } }
+        );
+        if (res.data.success && res.data.session_url) {
+          // Redirect to Stripe hosted checkout page
+          window.location.href = res.data.session_url;
+        } else {
+          toast.error(res.data.message || "Failed to initiate Stripe payment");
+        }
+      } catch {
+        toast.error("Server unavailable. Please use Cash on Delivery.");
+      }
+    } else {
+      // ── Cash on Delivery ──
+      try {
+        const res = await axios.post(
+          `${BACKEND_URL}/api/order/place`,
+          { userId, items, amount, address: formData },
+          { headers: { token: userToken } }
+        );
+        if (res.data.success) {
+          clearCart?.();
+          toast.success("🎉 Order placed! Sent to admin for verification.");
+          navigate("/orders");
+        } else {
+          // Fallback local order
+          const createdOrder = placeOrder(formData, method);
+          if (createdOrder) {
+            toast.success(`🎉 Order Placed! (offline mode)`);
+            navigate("/orders");
+          }
+        }
+      } catch {
+        // Offline fallback
+        const createdOrder = placeOrder(formData, method);
+        if (createdOrder) {
+          toast.success("🎉 Order Placed! (offline mode)");
+          navigate("/orders");
+        }
+      }
     }
   };
 
@@ -226,25 +275,46 @@ const Checkout = () => {
             </div>
 
             <div className="payment-options-grid">
+              {/* Stripe / Card Payment */}
               <div
                 onClick={() => setMethod("stripe")}
                 className={`payment-card ${method === "stripe" ? "selected" : ""}`}
               >
-                <div className="radio-dot"></div>
-                <img src={stripe} alt="Stripe" className="stripe-img" />
+                <div className="radio-dot" />
+                <div className="payment-text-wrapper">
+                  <FaCreditCard className="cod-icon stripe-icon" />
+                  <div>
+                    <span className="payment-title">Pay Online</span>
+                    <span className="payment-subtitle">Stripe — Cards, UPI, Netbanking</span>
+                  </div>
+                </div>
+                {method === "stripe" && (
+                  <span className="payment-badge">Secure 🔒</span>
+                )}
               </div>
 
+              {/* Cash on Delivery */}
               <div
                 onClick={() => setMethod("cod")}
                 className={`payment-card ${method === "cod" ? "selected" : ""}`}
               >
-                <div className="radio-dot"></div>
+                <div className="radio-dot" />
                 <div className="payment-text-wrapper">
                   <BiMoney className="cod-icon" />
-                  <span className="payment-title">Cash on Delivery</span>
+                  <div>
+                    <span className="payment-title">Cash on Delivery</span>
+                    <span className="payment-subtitle">Pay when your order arrives</span>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {method === "stripe" && (
+              <div className="stripe-info-box">
+                <p>🔐 You'll be redirected to Stripe's secure checkout to complete payment with your card, UPI, or netbanking.</p>
+                <p className="stripe-test-note">Test card: <code>4242 4242 4242 4242</code> · Any future date · Any CVV</p>
+              </div>
+            )}
           </div>
 
         </div>
@@ -253,7 +323,7 @@ const Checkout = () => {
         <div className="checkout-right-col">
           <CartTotal />
           <button type="submit" className="place-order-btn">
-            CONFIRM & PLACE ORDER
+            {method === "stripe" ? "💳 PROCEED TO PAYMENT" : "✅ PLACE ORDER (COD)"}
           </button>
         </div>
 

@@ -4,6 +4,43 @@
   padding: 40px 24px;
 }
 
+/* Stripe info box */
+.stripe-info-box {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #1d4ed8;
+}
+
+.stripe-info-box p { margin-bottom: 4px; }
+.stripe-test-note { font-size: 12px; color: #3b82f6; font-weight: 600; }
+.stripe-test-note code { background: rgba(59,130,246,0.1); padding: 2px 6px; border-radius: 4px; }
+
+.payment-subtitle {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.payment-badge {
+  margin-left: auto;
+  font-size: 11px;
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.stripe-icon { color: #6366f1 !important; }
+
+
+
 .checkout-header {
   margin-bottom: 24px;
 }

@@ -2,11 +2,9 @@ import React, { useContext, useState } from "react";
 import "./Navbar.css";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
-  BiUser, BiCart, BiSearch, BiShoppingBag, BiLogOut,
-  BiShield, BiCycling, BiX, BiMenu
+  BiUser, BiCart, BiSearch, BiShoppingBag, BiLogOut, BiX, BiMenu
 } from "react-icons/bi";
 import { FaUtensils } from "react-icons/fa";
-import { MdDeliveryDining } from "react-icons/md";
 import { FoodContext } from "../../context/FoodContext";
 
 export const Navbar = () => {
@@ -14,10 +12,7 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { getCartCount, user, logoutUser, orders } = useContext(FoodContext);
-
-  const pendingOrdersCount = orders ? orders.filter(o => o.status === "Pending Verification").length : 0;
-  const activeDeliveryCount = orders ? orders.filter(o => o.status === "Verified by Admin" || o.status === "Out for Delivery").length : 0;
+  const { getCartCount, user, logoutUser } = useContext(FoodContext);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -34,7 +29,7 @@ export const Navbar = () => {
 
   return (
     <header className="navbar-wrapper">
-      {/* Top Bar: Logo + Search + Actions */}
+      {/* Top Bar */}
       <div className="navbar-top">
         <div className="navbar-top-inner">
           {/* Logo */}
@@ -61,22 +56,8 @@ export const Navbar = () => {
             <button type="submit" className="search-btn">Search</button>
           </form>
 
-          {/* Right Actions */}
+          {/* Right Actions — CUSTOMER ONLY (no admin/delivery links) */}
           <div className="navbar-actions">
-            {/* Admin Panel */}
-            <Link to="/admin" className="action-pill admin-pill" title="Admin Panel">
-              <BiShield className="pill-icon" />
-              <span>Admin</span>
-              {pendingOrdersCount > 0 && <span className="notif-dot red">{pendingOrdersCount}</span>}
-            </Link>
-
-            {/* Delivery Panel */}
-            <Link to="/delivery" className="action-pill delivery-pill" title="Delivery Portal">
-              <MdDeliveryDining className="pill-icon" />
-              <span>Delivery</span>
-              {activeDeliveryCount > 0 && <span className="notif-dot green">{activeDeliveryCount}</span>}
-            </Link>
-
             {/* Profile Dropdown */}
             <div className="profile-dropdown-group">
               <button className="profile-pill">
@@ -107,9 +88,6 @@ export const Navbar = () => {
                 <Link to="/orders" className="dropdown-item">
                   <BiShoppingBag className="di-icon" /> My Orders
                 </Link>
-                <Link to="/checkout" className="dropdown-item">
-                  <BiCart className="di-icon" /> Quick Checkout
-                </Link>
                 <div className="dropdown-divider" />
                 {user ? (
                   <button className="dropdown-item danger" onClick={handleLogout}>
@@ -134,7 +112,7 @@ export const Navbar = () => {
               <span className="cart-label">Cart</span>
             </button>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Toggle */}
             <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <BiX /> : <BiMenu />}
             </button>
@@ -160,8 +138,6 @@ export const Navbar = () => {
           <NavLink to="/orders" className={({ isActive }) => `nav-strip-link ${isActive ? "active" : ""}`}>
             My Orders
           </NavLink>
-
-          {/* Right side: promo tag */}
           <div className="nav-strip-promo">
             <span>🚚 Free delivery on orders above ₹499</span>
           </div>
@@ -176,8 +152,6 @@ export const Navbar = () => {
           <NavLink to="/about" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-link">About Us</NavLink>
           <NavLink to="/contact" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-link">Contact</NavLink>
           <NavLink to="/orders" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-link">My Orders</NavLink>
-          <NavLink to="/admin" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-link admin">Admin Panel</NavLink>
-          <NavLink to="/delivery" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-link delivery">Delivery Portal</NavLink>
         </div>
       )}
     </header>
