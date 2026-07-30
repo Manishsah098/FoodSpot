@@ -8,6 +8,12 @@ import Cart from "./pages/Cart/Cart";
 import Checkout from "./pages/Checkout/Checkout";
 import Footer from "./components/Footer/Footer";
 import Order from "./pages/Order/Order";
+import Menu from "./pages/Menu/Menu";
+import FoodDetail from "./pages/FoodDetail/FoodDetail";
+import About from "./pages/About/About";
+import Contact from "./pages/Contact/Contact";
+import Admin from "./pages/Admin/Admin";
+import Delivery from "./pages/Delivery/Delivery";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -18,11 +24,19 @@ const App = () => {
       <Navbar />
       <div className="main-layout">
         <Routes>
+          {/* Customer Pages */}
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/food/:id" element={<FoodDetail />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/orders" element={<Order />} />
+          <Route path="/login" element={<Login />} />
+          {/* Admin & Delivery Panels */}
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/delivery" element={<Delivery />} />
         </Routes>
       </div>
       <Footer />

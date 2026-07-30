@@ -1,65 +1,114 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { product } from '../assets/assests';
+import { product as initialProducts } from '../assets/assests';
 
 export const FoodContext = createContext();
 
+// Sample Delivery Boys
+export const DELIVERY_PARTNERS = [
+  { id: "DB-101", name: "Alex Rivera", phone: "+91 98765 43210", vehicle: "Honda Activa (DL 04 AB 1234)" },
+  { id: "DB-102", name: "Rahul Sharma", phone: "+91 98123 45678", vehicle: "TVS NTORQ (DL 01 XY 8899)" },
+  { id: "DB-103", name: "Sameer Khan", phone: "+91 99555 12345", vehicle: "Royal Enfield (DL 09 MZ 5544)" },
+];
+
 const FoodContextProvider = ({ children }) => {
-  const delivery_fee = 12;
+  const delivery_fee = 15;
   const currency = '₹';
 
-  const [products, setProducts] = useState(product);
+  const [products, setProducts] = useState(initialProducts);
   const [cartItems, setCartItems] = useState({});
-  const [user, setUser] = useState(null);
-  const [orders, setOrders] = useState([
-    {
-      id: "ORD-94821",
-      date: "July 29, 2026",
-      status: "In Transit",
-      statusColor: "orange",
-      total: 510,
-      items: [
-        { product: product[1], quantity: 1 },
-        { product: product[3], quantity: 1 },
-        { product: product[4], quantity: 1 },
-      ],
-      address: "B-402 Sunshine Heights, Green Park, New Delhi",
-    },
-    {
-      id: "ORD-83719",
-      date: "July 25, 2026",
-      status: "Delivered",
-      statusColor: "green",
-      total: 340,
-      items: [
-        { product: product[0], quantity: 1 },
-        { product: product[2], quantity: 1 },
-      ],
-      address: "B-402 Sunshine Heights, Green Park, New Delhi",
-    },
-  ]);
 
-  // Load user from localStorage on mount
-  useEffect(() => {
+  // Default logged in user for auto-fill testing
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('foodspot_user');
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        return JSON.parse(savedUser);
       } catch (e) {
-        console.error("Failed to parse stored user", e);
+        console.error("Failed to parse user", e);
       }
     }
-  }, []);
+    return {
+      name: "Manish Sah",
+      email: "manish.sah@example.com",
+      phone: "+91 9876543210",
+      street: "B-402 Sunshine Heights",
+      city: "New Delhi",
+      state: "Delhi",
+      zipcode: "110016"
+    };
+  });
+
+  const [orders, setOrders] = useState([
+    {
+      id: "ORD-94821",
+      date: "July 30, 2026 09:30 PM",
+      status: "Pending Verification",
+      statusColor: "orange",
+      total: 515,
+      items: [
+        { product: initialProducts[1], quantity: 1 },
+        { product: initialProducts[3], quantity: 1 },
+        { product: initialProducts[4], quantity: 1 },
+      ],
+      customerName: "Manish Sah",
+      customerEmail: "manish.sah@example.com",
+      customerPhone: "+91 9876543210",
+      address: "B-402 Sunshine Heights, Green Park, New Delhi - 110016",
+      paymentMethod: "cod",
+      assignedDeliveryBoy: null,
+    },
+    {
+      id: "ORD-83719",
+      date: "July 30, 2026 07:15 PM",
+      status: "Verified by Admin",
+      statusColor: "blue",
+      total: 355,
+      items: [
+        { product: initialProducts[0], quantity: 1 },
+        { product: initialProducts[2], quantity: 1 },
+      ],
+      customerName: "Priya Sharma",
+      customerEmail: "priya@example.com",
+      customerPhone: "+91 98111 22334",
+      address: "Flat 102, Royal Palms, Saket, New Delhi - 110017",
+      paymentMethod: "stripe",
+      assignedDeliveryBoy: DELIVERY_PARTNERS[0],
+    },
+    {
+      id: "ORD-71239",
+      date: "July 30, 2026 05:40 PM",
+      status: "Delivered",
+      statusColor: "green",
+      total: 275,
+      items: [
+        { product: initialProducts[5], quantity: 1 },
+      ],
+      customerName: "Rahul Verma",
+      customerEmail: "rahul@example.com",
+      customerPhone: "+91 98999 88776",
+      address: "C-12 Connaught Place, New Delhi - 110001",
+      paymentMethod: "cod",
+      assignedDeliveryBoy: DELIVERY_PARTNERS[1],
+    }
+  ]);
+
+  // Sync user state with localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('foodspot_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('foodspot_user');
+    }
+  }, [user]);
 
   const loginUser = (userData) => {
     setUser(userData);
-    localStorage.setItem('foodspot_user', JSON.stringify(userData));
     toast.success(`Welcome back, ${userData.name || 'User'}!`);
   };
 
   const logoutUser = () => {
     setUser(null);
-    localStorage.removeItem('foodspot_user');
     toast.info("Logged out successfully");
   };
 
@@ -104,6 +153,7 @@ const FoodContextProvider = ({ children }) => {
     setCartItems({});
   };
 
+  // Place order with customer autofill & initial status 'Pending Verification'
   const placeOrder = (shippingInfo, paymentMethod) => {
     const cartEntries = Object.entries(cartItems).filter(([, qty]) => qty > 0);
     if (cartEntries.length === 0) return null;
@@ -115,24 +165,92 @@ const FoodContextProvider = ({ children }) => {
       }))
       .filter((i) => i.product);
 
+    const fullName = `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim();
+
     const newOrder = {
       id: "ORD-" + Math.floor(100000 + Math.random() * 900000),
-      date: new Date().toLocaleDateString("en-US", {
+      date: new Date().toLocaleString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
       }),
-      status: "Preparing Food",
+      status: "Pending Verification",
       statusColor: "orange",
       total: getCartAmount() + delivery_fee,
       items: orderItems,
+      customerName: fullName,
+      customerEmail: shippingInfo.email,
+      customerPhone: shippingInfo.phone,
       address: `${shippingInfo.street}, ${shippingInfo.city}, ${shippingInfo.state} - ${shippingInfo.zipcode}`,
       paymentMethod,
+      assignedDeliveryBoy: null,
     };
 
     setOrders((prev) => [newOrder, ...prev]);
     clearCart();
     return newOrder;
+  };
+
+  // Admin action: Verify order & assign delivery partner
+  const assignDeliveryPartner = (orderId, deliveryPartnerObj) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((ord) => {
+        if (ord.id === orderId) {
+          toast.success(`Order #${orderId} verified & assigned to ${deliveryPartnerObj.name}!`);
+          return {
+            ...ord,
+            status: "Verified by Admin",
+            statusColor: "blue",
+            assignedDeliveryBoy: deliveryPartnerObj,
+          };
+        }
+        return ord;
+      })
+    );
+  };
+
+  // Update order status (Admin or Delivery Boy action)
+  const updateOrderStatus = (orderId, newStatus) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((ord) => {
+        if (ord.id === orderId) {
+          let color = "orange";
+          if (newStatus === "Verified by Admin") color = "blue";
+          if (newStatus === "Out for Delivery") color = "purple";
+          if (newStatus === "Delivered") color = "green";
+          if (newStatus === "Cancelled") color = "red";
+
+          toast.info(`Order #${orderId} updated to "${newStatus}"`);
+          return {
+            ...ord,
+            status: newStatus,
+            statusColor: color,
+          };
+        }
+        return ord;
+      })
+    );
+  };
+
+  // Admin action: Add new product
+  const addProduct = (newProduct) => {
+    setProducts((prev) => [
+      {
+        ...newProduct,
+        _id: "p_" + Date.now(),
+        rating: 5.0,
+      },
+      ...prev,
+    ]);
+    toast.success(`Added "${newProduct.name}" to menu!`);
+  };
+
+  // Admin action: Delete product
+  const deleteProduct = (productId) => {
+    setProducts((prev) => prev.filter((p) => p._id !== productId));
+    toast.info("Product removed from menu.");
   };
 
   return (
@@ -150,10 +268,16 @@ const FoodContextProvider = ({ children }) => {
         delivery_fee,
         currency,
         user,
+        setUser,
         loginUser,
         logoutUser,
         orders,
         placeOrder,
+        assignDeliveryPartner,
+        updateOrderStatus,
+        addProduct,
+        deleteProduct,
+        DELIVERY_PARTNERS,
       }}
     >
       {children}

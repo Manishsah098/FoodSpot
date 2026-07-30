@@ -5,8 +5,38 @@
 }
 
 .checkout-header {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
+
+.autofill-notice-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+
+.autofill-notice-card .notice-icon {
+  font-size: 28px;
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.autofill-notice-card h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #15803d;
+  margin-bottom: 2px;
+}
+
+.autofill-notice-card p {
+  font-size: 13px;
+  color: #166534;
+}
+
 
 .checkout-form-grid {
   display: grid;

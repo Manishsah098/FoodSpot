@@ -1,14 +1,14 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import "./Checkout.css";
 import stripe from "../../assets/stripe_logo.png";
 import CartTotal from "../../components/CartTotal/CartTotal";
 import { FoodContext } from "../../context/FoodContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { BiCreditCard, BiMoney, BiMapPin, BiUser, BiEnvelope, BiPhone } from "react-icons/bi";
+import { BiCreditCard, BiMoney, BiMapPin, BiUser, BiEnvelope, BiPhone, BiCheckCircle } from "react-icons/bi";
 
 const Checkout = () => {
-  const { getCartAmount, placeOrder } = useContext(FoodContext);
+  const { getCartAmount, placeOrder, user } = useContext(FoodContext);
   const [method, setMethod] = useState("cod");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -19,9 +19,31 @@ const Checkout = () => {
     city: "",
     state: "",
     zipcode: "",
+    country: "India",
   });
 
   const navigate = useNavigate();
+
+  // Auto-fill user details when user is logged in
+  useEffect(() => {
+    if (user) {
+      const nameParts = (user.name || "").split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      setFormData((prev) => ({
+        ...prev,
+        firstName: firstName || prev.firstName,
+        lastName: lastName || prev.lastName,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone || "+91 9876543210",
+        street: user.street || prev.street || "",
+        city: user.city || prev.city || "",
+        state: user.state || prev.state || "",
+        zipcode: user.zipcode || prev.zipcode || "",
+      }));
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,7 +63,7 @@ const Checkout = () => {
 
     const createdOrder = placeOrder(formData, method);
     if (createdOrder) {
-      toast.success(`🎉 Order #${createdOrder.id} Placed Successfully!`);
+      toast.success(`🎉 Order #${createdOrder.id} Placed! Sent to Admin for verification.`);
       setTimeout(() => {
         navigate("/orders");
       }, 1000);
@@ -51,20 +73,30 @@ const Checkout = () => {
   return (
     <div className="checkout-page-container">
       <div className="checkout-header">
-        <h1 className="page-title">Checkout & Shipping</h1>
-        <p className="page-subtitle">Complete your details to place your order</p>
+        <h1 className="page-title">Checkout & Order Placement</h1>
+        <p className="page-subtitle">Personal details auto-filled for your account. Complete delivery address and payment choice.</p>
       </div>
+
+      {user && (
+        <div className="autofill-notice-card">
+          <BiCheckCircle className="notice-icon" />
+          <div>
+            <h4>Personal Details Pre-filled</h4>
+            <p>Logged in as <strong>{user.name}</strong> ({user.email}). Just enter delivery location & choose payment!</p>
+          </div>
+        </div>
+      )}
 
       <form className="checkout-form-grid" onSubmit={handlePlaceOrder}>
         
         {/* Left Column: Form Fields */}
         <div className="checkout-left-col">
           
-          {/* Address Section */}
+          {/* Personal Info & Address Section */}
           <div className="checkout-card">
             <div className="card-section-title">
-              <BiMapPin className="section-icon" />
-              <h2>Delivery Address</h2>
+              <BiUser className="section-icon" />
+              <h2>1. Contact & Personal Info (Auto-Filled)</h2>
             </div>
 
             <div className="form-fields">
@@ -116,13 +148,23 @@ const Checkout = () => {
                   />
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Delivery Location Section */}
+          <div className="checkout-card">
+            <div className="card-section-title">
+              <BiMapPin className="section-icon" />
+              <h2>2. Delivery Location</h2>
+            </div>
+
+            <div className="form-fields">
               <div className="input-group">
                 <BiMapPin className="field-icon" />
                 <input
                   type="text"
                   name="street"
-                  placeholder="Street Address / House No *"
+                  placeholder="Street Address / Building / Flat No *"
                   required
                   value={formData.street}
                   onChange={handleInputChange}
@@ -168,11 +210,11 @@ const Checkout = () => {
                     type="text"
                     name="country"
                     placeholder="Country"
-                    defaultValue="India"
+                    value={formData.country}
+                    onChange={handleInputChange}
                   />
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -180,7 +222,7 @@ const Checkout = () => {
           <div className="checkout-card">
             <div className="card-section-title">
               <BiCreditCard className="section-icon" />
-              <h2>Payment Options</h2>
+              <h2>3. Payment Method</h2>
             </div>
 
             <div className="payment-options-grid">
@@ -211,7 +253,7 @@ const Checkout = () => {
         <div className="checkout-right-col">
           <CartTotal />
           <button type="submit" className="place-order-btn">
-            PLACE ORDER NOW
+            CONFIRM & PLACE ORDER
           </button>
         </div>
 
