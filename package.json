@@ -1,0 +1,12 @@
+{
+  "name": "food-del",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "server": "npm --prefix backend run server",
+    "start": "npm --prefix backend start",
+    "backend": "npm --prefix backend run server",
+    "frontend": "npm --prefix frontend run dev",
+    "dev": "npm --prefix frontend run dev"
+  }
+}
