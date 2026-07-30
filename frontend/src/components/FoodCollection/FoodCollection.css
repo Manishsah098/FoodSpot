@@ -240,26 +240,86 @@
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-/* Empty State */
-.no-products-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 20px;
+/* Veg / Non-Veg Badge */
+.veg-nonveg-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 22px;
+  height: 22px;
   background: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.veg-nonveg-badge.veg {
+  border: 2px solid #16a34a;
+}
+.veg-nonveg-badge.veg .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+
+.veg-nonveg-badge.non-veg {
+  border: 2px solid #ef4444;
+}
+.veg-nonveg-badge.non-veg .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+/* Home Menu CTA Box */
+.home-menu-cta-box {
+  margin-top: 48px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   border-radius: var(--radius-lg);
-  border: 1px dashed var(--border);
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: white;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.15);
+  flex-wrap: wrap;
 }
 
-.empty-icon {
-  font-size: 54px;
-  margin-bottom: 16px;
-}
-
-.no-products-state h3 {
+.cta-content h3 {
   font-size: 22px;
-  margin-bottom: 8px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: white;
 }
 
-.no-products-state p {
-  color: var(--text-muted);
+.cta-content p {
+  font-size: 14px;
+  color: #94a3b8;
 }
+
+.view-full-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  background: var(--primary-gradient);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255, 56, 92, 0.4);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.view-full-menu-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 26px rgba(255, 56, 92, 0.55);
+}
+
