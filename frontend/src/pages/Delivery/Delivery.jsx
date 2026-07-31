@@ -1,98 +1,129 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import "./Delivery.css";
 import { FoodContext } from "../../context/FoodContext";
 import {
   BiCycling, BiCheckCircle, BiTimeFive, BiPhone, BiMapPin,
-  BiUser, BiPackage, BiMoney, BiCreditCard, BiWifi
+  BiUser, BiPackage, BiMoney, BiCreditCard, BiLogOut, BiShieldAlt
 } from "react-icons/bi";
 import { MdDeliveryDining } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Delivery = () => {
-  const { orders, updateOrderStatus, currency, DELIVERY_PARTNERS } = useContext(FoodContext);
-  const [selectedPartner, setSelectedPartner] = useState(DELIVERY_PARTNERS[0]);
+  const { orders, updateOrderStatus, currency } = useContext(FoodContext);
+  const navigate = useNavigate();
+
+  // Read the logged-in delivery partner from localStorage (set during DeliveryLogin)
+  const [loggedInPartner, setLoggedInPartner] = useState(null);
   const [expandedOrder, setExpandedOrder] = useState(null);
 
-  // Filter orders assigned to this delivery partner
-  const myOrders = orders.filter(
+  useEffect(() => {
+    const storedPartner = localStorage.getItem("deliveryPartner");
+    if (storedPartner) {
+      try {
+        setLoggedInPartner(JSON.parse(storedPartner));
+      } catch {
+        navigate("/delivery-login");
+      }
+    } else {
+      navigate("/delivery-login");
+    }
+  }, [navigate]);
+
+  /* ── Logout ─────────────────────────────────────────── */
+  const handleLogout = () => {
+    localStorage.removeItem("deliveryToken");
+    localStorage.removeItem("deliveryPartner");
+    toast.info("Logged out successfully");
+    navigate("/delivery-login");
+  };
+
+  if (!loggedInPartner) {
+    return (
+      <div className="delivery-container">
+        <div className="delivery-loading">
+          <MdDeliveryDining className="loading-icon" />
+          <p>Loading your portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Orders for this partner only ───────────────────── */
+  const myActiveOrders = orders.filter(
     (o) =>
-      o.assignedDeliveryBoy?.id === selectedPartner.id &&
+      o.assignedDeliveryBoy?.id === loggedInPartner.id &&
       (o.status === "Verified by Admin" || o.status === "Out for Delivery")
   );
 
-  const completedOrders = orders.filter(
+  const myCompletedOrders = orders.filter(
     (o) =>
-      o.assignedDeliveryBoy?.id === selectedPartner.id &&
+      o.assignedDeliveryBoy?.id === loggedInPartner.id &&
       o.status === "Delivered"
   );
 
+  const initials = loggedInPartner.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+
   return (
     <div className="delivery-container">
-      {/* Header */}
+
+      {/* ── Header ──────────────────────────────────────── */}
       <div className="delivery-header">
         <div className="delivery-header-left">
           <MdDeliveryDining className="delivery-logo-icon" />
           <div>
             <h1>Delivery Partner Portal</h1>
-            <p>View your assigned orders, track deliveries, and mark completions.</p>
+            <p>View your assigned orders and mark completions.</p>
           </div>
         </div>
-        <div className="partner-online-badge">
-          <BiWifi className="wifi-icon" />
-          <span>Online & Active</span>
+        <div className="delivery-header-right">
+          <div className="partner-online-badge">
+            <span className="online-dot" />
+            <span>Online &amp; Active</span>
+          </div>
+          <button className="delivery-logout-btn" onClick={handleLogout}>
+            <BiLogOut /> Logout
+          </button>
         </div>
       </div>
 
-      {/* Partner Selector */}
-      <div className="partner-selector-card">
-        <h3>Select Your Profile</h3>
-        <div className="partner-pills">
-          {DELIVERY_PARTNERS.map((partner) => (
-            <button
-              key={partner.id}
-              className={`partner-pill ${selectedPartner.id === partner.id ? "active" : ""}`}
-              onClick={() => setSelectedPartner(partner)}
-            >
-              <MdDeliveryDining className="pill-icon" />
-              <div>
-                <strong>{partner.name}</strong>
-                <span>{partner.vehicle}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Active Partner Info Bar */}
+      {/* ── Logged-In Partner Info Bar ───────────────────── */}
       <div className="active-partner-bar">
-        <div className="partner-avatar">
-          {selectedPartner.name.split(" ").map(n => n[0]).join("")}
-        </div>
-        <div>
-          <h3>{selectedPartner.name}</h3>
-          <p>{selectedPartner.phone} · {selectedPartner.vehicle}</p>
+        <div className="partner-avatar">{initials}</div>
+        <div className="partner-info-block">
+          <div className="partner-identity">
+            <BiShieldAlt className="partner-badge-icon" />
+            <h3>{loggedInPartner.name}</h3>
+            <span className="partner-id-tag">{loggedInPartner.id}</span>
+          </div>
+          <p>{loggedInPartner.phone} · {loggedInPartner.vehicle}</p>
         </div>
         <div className="partner-stats">
           <div className="p-stat">
-            <h4>{myOrders.length}</h4>
+            <h4>{myActiveOrders.length}</h4>
             <span>Active Orders</span>
           </div>
           <div className="p-stat">
-            <h4>{completedOrders.length}</h4>
+            <h4>{myCompletedOrders.length}</h4>
             <span>Delivered Today</span>
           </div>
         </div>
       </div>
 
-      {/* Active Deliveries */}
+      {/* ── Active Deliveries ────────────────────────────── */}
       <div className="delivery-section">
         <div className="section-title-row">
           <BiTimeFive className="section-ico" />
-          <h2>Active Assigned Deliveries ({myOrders.length})</h2>
+          <h2>Active Assigned Deliveries ({myActiveOrders.length})</h2>
         </div>
 
-        {myOrders.length > 0 ? (
+        {myActiveOrders.length > 0 ? (
           <div className="delivery-orders-list">
-            {myOrders.map((order) => (
+            {myActiveOrders.map((order) => (
               <div key={order.id} className="delivery-order-card">
                 <div className="delivery-order-header">
                   <div className="d-order-id-group">
@@ -102,8 +133,16 @@ const Delivery = () => {
                       <span className="order-time">{order.date}</span>
                     </div>
                   </div>
-                  <span className={`delivery-status-tag ${order.status === "Out for Delivery" ? "active-delivery" : "pending-pickup"}`}>
-                    {order.status === "Out for Delivery" ? "🚴 Out for Delivery" : "⏳ Ready for Pickup"}
+                  <span
+                    className={`delivery-status-tag ${
+                      order.status === "Out for Delivery"
+                        ? "active-delivery"
+                        : "pending-pickup"
+                    }`}
+                  >
+                    {order.status === "Out for Delivery"
+                      ? "🚴 Out for Delivery"
+                      : "⏳ Ready for Pickup"}
                   </span>
                 </div>
 
@@ -121,9 +160,15 @@ const Delivery = () => {
                   </a>
                   <div className="payment-chip">
                     {order.paymentMethod === "cod" ? (
-                      <><BiMoney className="pay-icon" /> <span>Collect {currency}{order.total}</span></>
+                      <>
+                        <BiMoney className="pay-icon" />
+                        <span>Collect {currency}{order.total}</span>
+                      </>
                     ) : (
-                      <><BiCreditCard className="pay-icon" /> <span>Paid Online</span></>
+                      <>
+                        <BiCreditCard className="pay-icon" />
+                        <span>Paid Online</span>
+                      </>
                     )}
                   </div>
                 </div>
@@ -138,22 +183,31 @@ const Delivery = () => {
                 {/* Expand Items */}
                 <button
                   className="expand-items-btn"
-                  onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                  onClick={() =>
+                    setExpandedOrder(expandedOrder === order.id ? null : order.id)
+                  }
                 >
-                  {expandedOrder === order.id ? "▲ Hide Items" : `▼ View ${order.items.length} Item(s)`}
+                  {expandedOrder === order.id
+                    ? "▲ Hide Items"
+                    : `▼ View ${order.items.length} Item(s)`}
                 </button>
 
                 {expandedOrder === order.id && (
                   <div className="items-preview-list">
-                    {order.items.map((item, i) => (
-                      item.product && (
-                        <div key={i} className="item-preview-row">
-                          <img src={item.product.image} alt={item.product.name} />
-                          <span>{item.product.name} × {item.quantity}</span>
-                          <span className="item-sub-price">{currency}{item.product.price * item.quantity}</span>
-                        </div>
-                      )
-                    ))}
+                    {order.items.map(
+                      (item, i) =>
+                        item.product && (
+                          <div key={i} className="item-preview-row">
+                            <img src={item.product.image} alt={item.product.name} />
+                            <span>
+                              {item.product.name} × {item.quantity}
+                            </span>
+                            <span className="item-sub-price">
+                              {currency}{item.product.price * item.quantity}
+                            </span>
+                          </div>
+                        )
+                    )}
                     <div className="total-summary-bar">
                       <strong>Total Order Value</strong>
                       <strong className="total-val">{currency}{order.total}</strong>
@@ -168,10 +222,9 @@ const Delivery = () => {
                       className="pickup-btn"
                       onClick={() => updateOrderStatus(order.id, "Out for Delivery")}
                     >
-                      <BiCycling /> Accept & Start Delivery
+                      <BiCycling /> Accept &amp; Start Delivery
                     </button>
                   )}
-
                   {order.status === "Out for Delivery" && (
                     <button
                       className="complete-btn"
@@ -188,25 +241,30 @@ const Delivery = () => {
           <div className="no-active-deliveries">
             <MdDeliveryDining className="empty-delivery-icon" />
             <h3>No Active Deliveries</h3>
-            <p>No orders have been assigned to you yet. Check back soon!</p>
+            <p>
+              No orders have been assigned to you yet. Check back soon — the admin
+              will send orders your way!
+            </p>
           </div>
         )}
       </div>
 
-      {/* Completed Deliveries Today */}
-      {completedOrders.length > 0 && (
+      {/* ── Completed Deliveries Today ───────────────────── */}
+      {myCompletedOrders.length > 0 && (
         <div className="delivery-section">
           <div className="section-title-row">
             <BiCheckCircle className="section-ico green" />
-            <h2>Completed Today ({completedOrders.length})</h2>
+            <h2>Completed Today ({myCompletedOrders.length})</h2>
           </div>
           <div className="completed-list">
-            {completedOrders.map((order) => (
+            {myCompletedOrders.map((order) => (
               <div key={order.id} className="completed-card">
                 <BiCheckCircle className="done-check-icon" />
                 <div>
                   <strong>{order.id}</strong>
-                  <span>{order.customerName} · {order.address.split(",")[0]}</span>
+                  <span>
+                    {order.customerName} · {order.address.split(",")[0]}
+                  </span>
                 </div>
                 <div className="comp-total">{currency}{order.total}</div>
               </div>

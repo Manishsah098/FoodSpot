@@ -18,7 +18,7 @@ const FoodContextProvider = ({ children }) => {
   const [products, setProducts] = useState(initialProducts);
   const [cartItems, setCartItems] = useState({});
 
-  // Default logged in user for auto-fill testing
+  // Load user from localStorage — returns null if not signed in (guest)
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('foodspot_user');
     if (savedUser) {
@@ -26,17 +26,10 @@ const FoodContextProvider = ({ children }) => {
         return JSON.parse(savedUser);
       } catch (e) {
         console.error("Failed to parse user", e);
+        return null;
       }
     }
-    return {
-      name: "Manish Sah",
-      email: "manish.sah@example.com",
-      phone: "+91 9876543210",
-      street: "B-402 Sunshine Heights",
-      city: "New Delhi",
-      state: "Delhi",
-      zipcode: "110016"
-    };
+    return null; // Guest by default — no session bleed with admin
   });
 
   const [orders, setOrders] = useState([
@@ -193,16 +186,16 @@ const FoodContextProvider = ({ children }) => {
     return newOrder;
   };
 
-  // Admin action: Verify order & assign delivery partner
+  // Admin action: Verify order & assign delivery partner → auto-advances to "Out for Delivery"
   const assignDeliveryPartner = (orderId, deliveryPartnerObj) => {
     setOrders((prevOrders) =>
       prevOrders.map((ord) => {
         if (ord.id === orderId) {
-          toast.success(`Order #${orderId} verified & assigned to ${deliveryPartnerObj.name}!`);
+          toast.success(`Order #${orderId} assigned to ${deliveryPartnerObj.name} — Out for Delivery!`);
           return {
             ...ord,
-            status: "Verified by Admin",
-            statusColor: "blue",
+            status: "Out for Delivery",
+            statusColor: "purple",
             assignedDeliveryBoy: deliveryPartnerObj,
           };
         }

@@ -6,28 +6,30 @@ import { useNavigate } from "react-router-dom";
 import { FoodContext } from "../../context/FoodContext";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../../config/firebase";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const BACKEND_URL = "http://localhost:4000";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail]               = useState("");
+  const [password, setPassword]         = useState("");
+  const [name, setName]                 = useState("");
+  const [loading, setLoading]           = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const { loginUser } = useContext(FoodContext);
   const navigate = useNavigate();
 
+  /* ── Email / Password Login ─────────────────────────── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
     try {
-      const endpoint = currentState === "Login" ? "/api/user/login" : "/api/user/register";
+      const endpoint = currentState === "Login"
+        ? "/api/user/login"
+        : "/api/user/register";
       const payload = currentState === "Login"
         ? { email, password }
         : { name, email, password };
@@ -43,7 +45,6 @@ const Login = () => {
         toast.error(res.data.message || "Something went wrong");
       }
     } catch {
-      // Fallback: offline login
       const userName = name.trim() || email.split("@")[0] || "User";
       loginUser({ name: userName, email });
       toast.success("Logged in (offline mode)");
@@ -53,46 +54,69 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (googleLoading) return;
-    setGoogleLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
+  /* ── Real Google OAuth via @react-oauth/google ───────── */
+  // This opens the REAL Google account picker in the browser.
+  // After the user picks an account, Google returns an access token,
+  // which we use to fetch the user's profile from Google's API,
+  // then send to our backend for auth.
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      try {
+        // Fetch actual Google profile using the access token
+        const profileRes = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } }
+        );
+        const profile = profileRes.data;
+        // profile.name, profile.email, profile.sub (Google UID)
 
-      // Send Google user info to backend
-      const res = await axios.post(`${BACKEND_URL}/api/user/google-login`, {
-        name: user.displayName,
-        email: user.email,
-        googleId: user.uid,
-      });
+        // Send to our backend
+        const backendRes = await axios.post(`${BACKEND_URL}/api/user/google-login`, {
+          name:     profile.name,
+          email:    profile.email,
+          googleId: profile.sub,
+        });
 
-      if (res.data.success) {
-        localStorage.setItem("userToken", res.data.token);
-        loginUser(res.data.user || { name: user.displayName, email: user.email });
-      } else {
-        // Use Google profile directly if backend fails
-        loginUser({ name: user.displayName, email: user.email });
-      }
-      toast.success(`Welcome, ${user.displayName}! 🎉`);
-      navigate("/");
-    } catch (error) {
-      if (error.code === "auth/popup-closed-by-user") {
-        toast.info("Google login cancelled");
-      } else if (error.code === "auth/configuration-not-found" || error.code?.includes("api-key")) {
-        // Firebase not configured — use mock Google login
-        loginUser({ name: "Google User", email: "user@gmail.com" });
-        toast.success("Logged in with Google (demo mode)! 🎉");
+        if (backendRes.data.success) {
+          localStorage.setItem("userToken", backendRes.data.token);
+          loginUser(backendRes.data.user || { name: profile.name, email: profile.email });
+        } else {
+          // Backend offline — still use real Google profile
+          loginUser({ name: profile.name, email: profile.email });
+        }
+
+        toast.success(`Welcome, ${profile.name}! 🎉`);
         navigate("/");
-      } else {
-        toast.error("Google login failed. Please try email login.");
-        console.error("Google login error:", error);
+      } catch (err) {
+        console.error("Google profile fetch error:", err);
+        toast.error("Google login failed. Please try again.");
+      } finally {
+        setGoogleLoading(false);
       }
-    } finally {
+    },
+    onError: (err) => {
+      console.error("Google login error:", err);
+      toast.error("Google login was cancelled or failed.");
       setGoogleLoading(false);
+    },
+    flow: "implicit", // uses popup, shows real Google account chooser
+  });
+
+  const handleGoogleClick = () => {
+    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+        import.meta.env.VITE_GOOGLE_CLIENT_ID.includes("YOUR_GOOGLE_CLIENT_ID")) {
+      toast.error(
+        "Google Client ID not configured. Please add VITE_GOOGLE_CLIENT_ID to frontend/.env",
+        { autoClose: 6000 }
+      );
+      return;
     }
+    setGoogleLoading(true);
+    googleLogin();
   };
 
+  /* ── Render ─────────────────────────────────────────── */
   return (
     <div className="auth-page-wrapper">
       <button className="back-home-btn" onClick={() => navigate("/")}>
@@ -109,11 +133,11 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Google Login Button */}
+        {/* Real Google Login Button */}
         <button
           className="google-login-btn"
           type="button"
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleClick}
           disabled={googleLoading}
         >
           {googleLoading ? (
@@ -121,7 +145,7 @@ const Login = () => {
           ) : (
             <FaGoogle className="google-icon" />
           )}
-          {googleLoading ? "Signing in with Google..." : "Continue with Google"}
+          {googleLoading ? "Opening Google..." : "Continue with Google"}
         </button>
 
         <div className="auth-divider">
@@ -177,7 +201,11 @@ const Login = () => {
           <button type="submit" className="auth-submit-btn" disabled={loading}>
             {loading ? (
               <span className="auth-spinner" />
-            ) : currentState === "Login" ? "Sign In →" : "Create Account →"}
+            ) : currentState === "Login" ? (
+              "Sign In →"
+            ) : (
+              "Create Account →"
+            )}
           </button>
         </form>
 

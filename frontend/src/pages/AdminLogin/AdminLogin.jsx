@@ -25,6 +25,9 @@ const AdminLogin = () => {
       const res = await axios.post(`${BACKEND_URL}/api/user/admin`, { email, password });
       if (res.data.success) {
         localStorage.setItem('adminToken', res.data.token);
+        // Clear any customer session so admin panel is fully isolated
+        localStorage.removeItem('foodspot_user');
+        localStorage.removeItem('userToken');
         toast.success('Welcome, Admin! Redirecting to dashboard...');
         setTimeout(() => navigate('/admin'), 800);
       } else {
@@ -34,10 +37,13 @@ const AdminLogin = () => {
       // Fallback for when backend is down — use hardcoded credentials
       if (email === 'admin@gmail.com' && password === 'admin123') {
         localStorage.setItem('adminToken', 'local_admin_token');
+        // Clear any customer session so admin panel is fully isolated
+        localStorage.removeItem('foodspot_user');
+        localStorage.removeItem('userToken');
         toast.success('Welcome, Admin!');
         setTimeout(() => navigate('/admin'), 800);
       } else {
-        toast.error('Server unavailable. Check your credentials.');
+        toast.error('Invalid credentials. Try admin@gmail.com / admin123');
       }
     } finally {
       setLoading(false);

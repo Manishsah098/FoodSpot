@@ -3,23 +3,37 @@ import "./Admin.css";
 import { FoodContext } from "../../context/FoodContext";
 import {
   BiShield, BiPackage, BiCheckCircle, BiTimeFive, BiCar, BiDollarCircle,
-  BiUser, BiPhone, BiMapPin, BiPlus, BiTrash, BiFilter
+  BiUser, BiPhone, BiMapPin, BiPlus, BiTrash, BiFilter, BiLogOut
 } from "react-icons/bi";
+import { MdDeliveryDining, MdSend } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-import { MdDeliveryDining } from "react-icons/md";
-
-const statusFilters = ["All", "Pending Verification", "Verified by Admin", "Out for Delivery", "Delivered"];
+const statusFilters = ["All", "Pending Verification", "Out for Delivery", "Delivered", "Cancelled"];
 
 const Admin = () => {
-  const { orders, assignDeliveryPartner, updateOrderStatus, DELIVERY_PARTNERS, products, addProduct, deleteProduct, currency } = useContext(FoodContext);
+  const {
+    orders, assignDeliveryPartner, updateOrderStatus,
+    DELIVERY_PARTNERS, products, addProduct, deleteProduct, currency
+  } = useContext(FoodContext);
 
-  const [activeTab, setActiveTab] = useState("orders");
-  const [filter, setFilter] = useState("All");
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab]       = useState("orders");
+  const [filter, setFilter]             = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [assignModal, setAssignModal] = useState(null);
+  const [assignModal, setAssignModal]   = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: "", category: "Salad", price: "", description: "", image: "" });
+  const [newProduct, setNewProduct]     = useState({ name: "", category: "Salad", price: "", description: "", image: "" });
 
+  /* ── Admin Logout ───────────────────────────────────── */
+  const handleAdminLogout = () => {
+    localStorage.removeItem("adminToken");
+    toast.info("Admin logged out");
+    navigate("/admin-login");
+  };
+
+  /* ── Add Product ────────────────────────────────────── */
   const handleCreateProduct = (e) => {
     e.preventDefault();
     if (!newProduct.name || !newProduct.price) return;
@@ -32,45 +46,64 @@ const Admin = () => {
     setShowAddModal(false);
   };
 
-
+  /* ── Helpers ────────────────────────────────────────── */
   const filteredOrders = orders.filter(o => filter === "All" || o.status === filter);
 
-  const pendingCount = orders.filter(o => o.status === "Pending Verification").length;
-  const verifiedCount = orders.filter(o => o.status === "Verified by Admin").length;
+  const pendingCount   = orders.filter(o => o.status === "Pending Verification").length;
+  const activeCount    = orders.filter(o => o.status === "Out for Delivery").length;
   const deliveredCount = orders.filter(o => o.status === "Delivered").length;
-  const totalRevenue = orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + o.total, 0);
+  const totalRevenue   = orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + o.total, 0);
 
   const statusColorMap = {
     "Pending Verification": "orange",
-    "Verified by Admin": "blue",
-    "Out for Delivery": "purple",
-    "Delivered": "green",
-    "Cancelled": "red"
+    "Verified by Admin":    "blue",
+    "Out for Delivery":     "purple",
+    "Delivered":            "green",
+    "Cancelled":            "red"
+  };
+
+  /* ── Handle partner assignment ──────────────────────── */
+  const handleAssignPartner = (partner) => {
+    assignDeliveryPartner(assignModal.id, partner);
+    setAssignModal(null);
+    setSelectedOrder(null);
   };
 
   return (
     <div className="admin-container">
-      {/* Admin Header */}
+
+      {/* ── Admin Header ──────────────────────────────── */}
       <div className="admin-header">
         <div className="admin-title-area">
           <BiShield className="admin-logo-icon" />
           <div>
             <h1>Admin Control Panel</h1>
-            <p>Manage orders, verify deliveries, and control the menu catalog.</p>
+            <p>Manage orders, assign delivery partners, and control the menu catalog.</p>
           </div>
         </div>
-        <div className="admin-tab-switcher">
-          <button className={`tab-btn ${activeTab === "orders" ? "active" : ""}`} onClick={() => setActiveTab("orders")}>
-            <BiPackage /> Orders
-            {pendingCount > 0 && <span className="tab-badge">{pendingCount}</span>}
-          </button>
-          <button className={`tab-btn ${activeTab === "menu" ? "active" : ""}`} onClick={() => setActiveTab("menu")}>
-            <BiPlus /> Menu Editor
+        <div className="admin-header-right">
+          <div className="admin-tab-switcher">
+            <button
+              className={`tab-btn ${activeTab === "orders" ? "active" : ""}`}
+              onClick={() => setActiveTab("orders")}
+            >
+              <BiPackage /> Orders
+              {pendingCount > 0 && <span className="tab-badge">{pendingCount}</span>}
+            </button>
+            <button
+              className={`tab-btn ${activeTab === "menu" ? "active" : ""}`}
+              onClick={() => setActiveTab("menu")}
+            >
+              <BiPlus /> Menu Editor
+            </button>
+          </div>
+          <button className="admin-logout-btn" onClick={handleAdminLogout}>
+            <BiLogOut /> Logout
           </button>
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* ── Stats Cards ───────────────────────────────── */}
       <div className="admin-stats-row">
         <div className="admin-stat-card orange">
           <BiTimeFive className="stat-ico" />
@@ -79,21 +112,21 @@ const Admin = () => {
             <p>Pending Orders</p>
           </div>
         </div>
-        <div className="admin-stat-card blue">
-          <BiCheckCircle className="stat-ico" />
+        <div className="admin-stat-card purple">
+          <BiCar className="stat-ico" />
           <div>
-            <h3>{verifiedCount}</h3>
-            <p>Verified / Active</p>
+            <h3>{activeCount}</h3>
+            <p>Out for Delivery</p>
           </div>
         </div>
         <div className="admin-stat-card green">
-          <BiCar className="stat-ico" />
+          <BiCheckCircle className="stat-ico" />
           <div>
             <h3>{deliveredCount}</h3>
             <p>Delivered Today</p>
           </div>
         </div>
-        <div className="admin-stat-card purple">
+        <div className="admin-stat-card blue">
           <BiDollarCircle className="stat-ico" />
           <div>
             <h3>{currency}{totalRevenue}</h3>
@@ -102,7 +135,7 @@ const Admin = () => {
         </div>
       </div>
 
-      {/* Orders Tab */}
+      {/* ── Orders Tab ────────────────────────────────── */}
       {activeTab === "orders" && (
         <div className="orders-management-section">
           {/* Filter Bar */}
@@ -132,8 +165,8 @@ const Admin = () => {
                   <th>Items</th>
                   <th>Total</th>
                   <th>Status</th>
-                  <th>Delivery Boy</th>
-                  <th>Action</th>
+                  <th>Delivery Partner</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,7 +186,9 @@ const Admin = () => {
                       </div>
                     </td>
                     <td>
-                      <span className="items-count">{order.items.length} item{order.items.length !== 1 ? "s" : ""}</span>
+                      <span className="items-count">
+                        {order.items.length} item{order.items.length !== 1 ? "s" : ""}
+                      </span>
                     </td>
                     <td className="total-cell"><strong>{currency}{order.total}</strong></td>
                     <td>
@@ -173,22 +208,42 @@ const Admin = () => {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <button className="view-detail-btn" onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}>
+                        <button
+                          className="view-detail-btn"
+                          onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
+                        >
                           {selectedOrder?.id === order.id ? "Hide" : "View"}
                         </button>
+
+                        {/* Pending → Send to Delivery Man */}
                         {order.status === "Pending Verification" && (
-                          <button className="assign-btn" onClick={() => setAssignModal(order)}>
-                            <BiCheckCircle /> Verify & Assign
+                          <button className="send-delivery-btn" onClick={() => setAssignModal(order)}>
+                            <MdSend /> Send to Delivery
                           </button>
                         )}
-                        {order.status === "Verified by Admin" && (
-                          <button className="assign-btn secondary" onClick={() => setAssignModal(order)}>
-                            Reassign
-                          </button>
-                        )}
+
+                        {/* Out for Delivery → Reassign or Mark Delivered */}
                         {order.status === "Out for Delivery" && (
-                          <button className="mark-delivered-btn" onClick={() => updateOrderStatus(order.id, "Delivered")}>
-                            Mark Delivered
+                          <>
+                            <button className="assign-btn secondary" onClick={() => setAssignModal(order)}>
+                              Reassign
+                            </button>
+                            <button
+                              className="mark-delivered-btn"
+                              onClick={() => updateOrderStatus(order.id, "Delivered")}
+                            >
+                              Mark Delivered
+                            </button>
+                          </>
+                        )}
+
+                        {/* Cancel option for Pending orders */}
+                        {order.status === "Pending Verification" && (
+                          <button
+                            className="cancel-order-btn"
+                            onClick={() => updateOrderStatus(order.id, "Cancelled")}
+                          >
+                            Cancel
                           </button>
                         )}
                       </div>
@@ -203,7 +258,7 @@ const Admin = () => {
             </table>
           </div>
 
-          {/* Order Detail Expansion */}
+          {/* Order Detail Panel */}
           {selectedOrder && (
             <div className="order-detail-panel">
               <h3>Order Detail — {selectedOrder.id}</h3>
@@ -213,13 +268,21 @@ const Admin = () => {
                   <p><BiPhone className="d-icon" /> <strong>Phone:</strong> {selectedOrder.customerPhone}</p>
                   <p><BiMapPin className="d-icon" /> <strong>Address:</strong> {selectedOrder.address}</p>
                   <p><strong>Payment:</strong> {selectedOrder.paymentMethod === "cod" ? "Cash on Delivery" : "Stripe (Online)"}</p>
+                  {selectedOrder.assignedDeliveryBoy && (
+                    <p>
+                      <MdDeliveryDining className="d-icon" />
+                      <strong> Delivery Partner:</strong> {selectedOrder.assignedDeliveryBoy.name} · {selectedOrder.assignedDeliveryBoy.phone}
+                    </p>
+                  )}
                 </div>
                 <div className="detail-col">
                   <p><strong>Ordered Items:</strong></p>
                   {selectedOrder.items.map((item, i) => (
                     <div key={i} className="detail-item-row">
                       {item.product && <img src={item.product.image} alt={item.product.name} />}
-                      <span>{item.product?.name} × {item.quantity} = {currency}{item.product?.price * item.quantity}</span>
+                      <span>
+                        {item.product?.name} × {item.quantity} = {currency}{item.product?.price * item.quantity}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -229,7 +292,7 @@ const Admin = () => {
         </div>
       )}
 
-      {/* Menu Editor Tab */}
+      {/* ── Menu Editor Tab ───────────────────────────── */}
       {activeTab === "menu" && (
         <div className="menu-editor-section">
           <div className="menu-editor-header">
@@ -259,7 +322,7 @@ const Admin = () => {
         </div>
       )}
 
-      {/* Add Product Modal */}
+      {/* ── Add Product Modal ─────────────────────────── */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="add-edit-modal" onClick={e => e.stopPropagation()}>
@@ -330,30 +393,38 @@ const Admin = () => {
         </div>
       )}
 
-
-      {/* Assign Delivery Modal */}
+      {/* ── Assign Delivery Partner Modal ─────────────── */}
       {assignModal && (
         <div className="modal-overlay" onClick={() => setAssignModal(null)}>
           <div className="assign-modal" onClick={e => e.stopPropagation()}>
-            <h3>Assign Delivery Partner</h3>
-            <p>Select a delivery partner for Order <strong>#{assignModal.id}</strong></p>
+            <div className="assign-modal-header">
+              <MdSend className="assign-modal-icon" />
+              <div>
+                <h3>Send to Delivery Partner</h3>
+                <p>
+                  Order <strong>#{assignModal.id}</strong> · {currency}{assignModal.total} ·{" "}
+                  <em>{assignModal.customerName}</em>
+                </p>
+              </div>
+            </div>
             <div className="partner-list">
               {DELIVERY_PARTNERS.map(partner => (
                 <div
                   key={partner.id}
                   className="partner-card"
-                  onClick={() => {
-                    assignDeliveryPartner(assignModal.id, partner);
-                    setAssignModal(null);
-                  }}
+                  onClick={() => handleAssignPartner(partner)}
                 >
-                  <MdDeliveryDining className="partner-icon" />
+                  <div className="partner-avatar-circle">
+                    {partner.name.split(" ").map(n => n[0]).join("")}
+                  </div>
                   <div>
                     <strong>{partner.name}</strong>
                     <span>{partner.phone}</span>
                     <span>{partner.vehicle}</span>
                   </div>
-                  <button className="select-partner-btn">Select →</button>
+                  <button className="select-partner-btn">
+                    <MdSend /> Assign →
+                  </button>
                 </div>
               ))}
             </div>

@@ -334,3 +334,15 @@
   .delivery-login-right { padding: 24px 16px; }
   .dl-login-card { padding: 32px 20px; }
 }
+
+.dl-cred-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 4px 0 0;
+}
+
+.dl-cred-sub strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+

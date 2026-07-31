@@ -130,17 +130,8 @@ const DeliveryLogin = () => {
             </div>
 
             <div className="dl-credentials-box">
-              <p className="dl-cred-title">📋 Partner Credentials</p>
-              <table className="dl-cred-table">
-                <thead>
-                  <tr><th>ID</th><th>Name</th><th>Password</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>DB-101</td><td>Alex Rivera</td><td>alex@delivery</td></tr>
-                  <tr><td>DB-102</td><td>Rahul Sharma</td><td>rahul@delivery</td></tr>
-                  <tr><td>DB-103</td><td>Sameer Khan</td><td>sameer@delivery</td></tr>
-                </tbody>
-              </table>
+              <p className="dl-cred-title">🔑 Demo Mode — Use your Delivery ID &amp; assigned password</p>
+              <p className="dl-cred-sub">e.g. ID: <strong>DB-101</strong> · Password: <strong>alex@delivery</strong></p>
             </div>
 
             <button type="submit" className="dl-submit-btn" disabled={loading}>
