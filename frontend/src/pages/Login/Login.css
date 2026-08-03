@@ -604,3 +604,77 @@
   background: #f8f9fa;
   border-color: #c6c7c8;
 }
+
+.add-avatar {
+  background: #e8f0fe !important;
+  color: #1a73e8 !important;
+  font-size: 22px !important;
+}
+
+.add-account-row {
+  border-top: 1px dashed #e0e0e0;
+  margin-top: 4px;
+}
+
+.google-custom-account-form {
+  padding: 14px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8f9fa;
+  border-top: 1px solid #f1f3f4;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.google-custom-input-wrapper input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #dadce0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.google-custom-input-wrapper input:focus {
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+}
+
+.google-custom-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.google-custom-btn-submit {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.google-custom-btn-submit:hover {
+  background: #1557b0;
+}
+
+.google-custom-btn-cancel {
+  background: transparent;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+  padding: 8px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.google-custom-btn-cancel:hover {
+  background: #e8eaed;
+}

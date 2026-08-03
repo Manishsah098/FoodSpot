@@ -227,17 +227,50 @@ const FoodContextProvider = ({ children }) => {
     );
   };
 
+  const [bannerText, setBannerText] = useState(() => {
+    return localStorage.getItem('foodspot_banner') || "⚡ FAST DELIVERY | 20% OFF ON FIRST ORDER WITH CODE: FOOD20";
+  });
+
+  const updateBannerText = (newText) => {
+    setBannerText(newText);
+    localStorage.setItem('foodspot_banner', newText);
+    toast.success("Website announcement banner updated!");
+  };
+
   // Admin action: Add new product
   const addProduct = (newProduct) => {
     setProducts((prev) => [
       {
         ...newProduct,
         _id: "p_" + Date.now(),
-        rating: 5.0,
+        rating: Number(newProduct.rating) || 4.5,
+        outOfStock: false,
       },
       ...prev,
     ]);
     toast.success(`Added "${newProduct.name}" to menu!`);
+  };
+
+  // Admin action: Edit existing product
+  const editProduct = (productId, updatedFields) => {
+    setProducts((prev) =>
+      prev.map((p) => (p._id === productId ? { ...p, ...updatedFields } : p))
+    );
+    toast.success(`Updated "${updatedFields.name || "Dish"}"!`);
+  };
+
+  // Admin action: Toggle Out of Stock status
+  const toggleProductStock = (productId) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p._id === productId) {
+          const nextState = !p.outOfStock;
+          toast.info(`"${p.name}" is now ${nextState ? "Out of Stock" : "In Stock"}`);
+          return { ...p, outOfStock: nextState };
+        }
+        return p;
+      })
+    );
   };
 
   // Admin action: Delete product
@@ -269,7 +302,11 @@ const FoodContextProvider = ({ children }) => {
         assignDeliveryPartner,
         updateOrderStatus,
         addProduct,
+        editProduct,
+        toggleProductStock,
         deleteProduct,
+        bannerText,
+        updateBannerText,
         DELIVERY_PARTNERS,
       }}
     >
