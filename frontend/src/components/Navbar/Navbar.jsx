@@ -12,7 +12,7 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { getCartCount, user, logoutUser } = useContext(FoodContext);
+  const { getCartCount, user, logoutUser, bannerText } = useContext(FoodContext);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -139,7 +139,7 @@ export const Navbar = () => {
             My Orders
           </NavLink>
           <div className="nav-strip-promo">
-            <span>🚚 Free delivery on orders above ₹499</span>
+            <span>{bannerText || "🚚 Free delivery on orders above ₹499"}</span>
           </div>
         </div>
       </nav>
